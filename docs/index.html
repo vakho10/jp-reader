@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Japanese Reader</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="lib/bootstrap-5.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style/bootstrap.blog.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        ruby rt {
+            font-size: 0.6em;
+            color: #555;
+        }
+
+        .drop-zone {
+            border: 2px dashed #6c757d;
+            border-radius: 0.75rem;
+            padding: 2.5rem;
+            text-align: center;
+            color: #6c757d;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drop-zone.dragover {
+            background-color: #e9ecef;
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+
+        .result-highlight {
+            animation: highlightFade 1.5s ease-out;
+        }
+
+        .main-header {
+            background-image: url('image/banner.jpg');
+            background-size: cover;
+            background-position: left;
+            height: 300px;
+        }
+
+        .main-header > h1 {
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .text-stroke {
+            -webkit-text-stroke: 1px #000;
+        }
+
+        .main-footer {
+            background-color: #f9efe5;
+        }
+
+        @keyframes highlightFade {
+            0% {
+                box-shadow: 0 0 15px rgba(13, 110, 253, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(13, 110, 253, 0.4);
+            }
+            100% {
+                box-shadow: none;
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 576px) {
+            .drop-zone {
+                padding: 2rem 1rem;
+                font-size: 1rem;
+            }
+
+            .drop-zone i {
+                font-size: 2rem;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+
+            .nav-tabs .nav-item {
+                flex: 1 1 50%;
+                text-align: center;
+            }
+
+            #runOcr {
+                width: 100%;
+            }
+
+            pre, #furiganaOutput {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+<div class="container">
+
+    <div style="min-height: 100vh;" class="d-flex flex-column">
+        <header class="main-header rounded-0 text-white d-flex justify-content-center align-content-center flex-column p-5">
+            <h1 class="text-center text-stroke fw-bold display-4">日本語 OCR + Furigana</h1>
+            <p class="text-center fw-bold fs-4 lead mb-0 text-stroke">Extract Japanese text with furigana support</p>
+        </header>
+        <div class="p-4 bg-white rounded-0 border-0 flex-grow-1 d-flex flex-column">
+            <div class="d-flex flex-column gap-4 flex-grow-1">
+                <!-- Upload -->
+                <div class="flex-grow-1 d-flex flex-column">
+                    <label for="imageInput" class="form-label fw-semibold">Upload an image</label>
+                    <div id="dropZone" class="drop-zone fs-5 flex-grow-1">
+                        <i class="bi bi-upload display-6 mb-2"></i>
+                        <span>Drop image here or click to select</span>
+                    </div>
+                    <input type="file" class="form-control d-none" id="imageInput" accept="image/*">
+                </div>
+
+                <!-- Image Preview -->
+                <div id="previewCard" class="card d-none shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Preview</span>
+                        <button id="clearPreview" class="btn btn-sm btn-outline-danger">Clear</button>
+                    </div>
+                    <div class="card-body text-center">
+                        <img id="imagePreview" alt="Selected image" class="img-fluid rounded">
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="ocrType" class="form-label">OCR Type</label>
+                        <select class="form-select" id="ocrType">
+                            <option value="jpn" selected>Horizontal Japanese</option>
+                            <option value="jpn_vert">Vertical Japanese</option>
+                            <option value="jpn+eng">Japanese + English</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="fontSizeRange" class="form-label">Font Size: <span
+                                id="fontSizeValue">16</span>px</label>
+                        <input type="range" class="form-range" id="fontSizeRange" min="12" max="36" step="1" value="16">
+                    </div>
+                </div>
+
+                <!-- Run Button -->
+                <div class="d-grid">
+                    <button id="runOcr" class="btn btn-primary btn-lg">Run OCR</button>
+                </div>
+
+                <!-- Progress -->
+                <div id="progressBarContainer" class="d-none">
+                    <div class="progress" style="height: 1.5rem;">
+                        <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+                    </div>
+                </div>
+
+                <!-- Results Tabs -->
+                <div id="resultsContainer" class="d-none">
+                    <ul class="nav nav-tabs nav-justified" id="resultTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="text-tab" data-bs-toggle="tab"
+                                    data-bs-target="#textResult"
+                                    type="button">Recognized Text
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="furigana-tab" data-bs-toggle="tab"
+                                    data-bs-target="#furiganaResult"
+                                    type="button">With Furigana
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content border rounded p-3 border-top-0 rounded-top-0">
+                        <div class="tab-pane fade show active border rounded p-3 bg-white position-relative"
+                             id="textResult">
+                            <pre id="output" class="m-0" style="white-space: pre-wrap; font-size:16px;"></pre>
+                            <button class="btn btn-sm btn-outline-secondary mt-2 copy-btn d-none position-absolute z-1 top-0 end-0 mt-1 me-2"
+                                    data-target="output">Copy
+                            </button>
+                        </div>
+                        <div class="tab-pane fade border rounded p-3 bg-white position-relative" id="furiganaResult">
+                            <div id="furiganaOutput" style="font-size:16px;"></div>
+                            <button class="btn btn-sm btn-outline-secondary mt-2 copy-btn d-none position-absolute z-1 top-0 end-0 mt-1 me-2"
+                                    data-target="furiganaOutput">Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="rounded-0 border-0 main-footer d-flex justify-content-center align-content-center">
+        <div class="d-md-flex justify-content-center align-items-center">
+            <div class="flex-grow-1 align-self-start">
+                <div class="card mt-4 m-md-4 border-4 border-dark rounded-4">
+                    <div class="card-body">
+                        <h2>
+                            <ruby>共有
+                                <rp>(</rp>
+                                <rt>きょうゆう</rt>
+                                <rp>)</rp>
+                            </ruby>
+                            を
+                            <ruby>忘れ
+                                <rp>(</rp>
+                                <rt>わすれ</rt>
+                                <rp>)</rp>
+                            </ruby>
+                            ないでくださーい。
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <img src="image/footer.jpg" alt="Footer image" class="img-fluid mt-4"/>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- JS -->
+<script src="lib/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/wanakana.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.js"></script>
+
+<script>
+    const input = document.getElementById('imageInput');
+    const dropZone = document.getElementById('dropZone');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewCard = document.getElementById('previewCard');
+    const clearPreviewBtn = document.getElementById('clearPreview');
+    const runBtn = document.getElementById('runOcr');
+    const fontSizeRange = document.getElementById('fontSizeRange');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+    const output = document.getElementById('output');
+    const furiganaOutput = document.getElementById('furiganaOutput');
+    const ocrTypeSelect = document.getElementById('ocrType');
+    const progressBar = document.getElementById('progressBar');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const resultsContainer = document.getElementById('resultsContainer');
+
+    let tokenizer = null;
+
+    kuromoji.builder({dicPath: "./lib/kuromoji/dict/"}).build((err, builtTokenizer) => {
+        if (err) {
+            console.error("Failed to load Kuromoji:", err);
+            return;
+        }
+        tokenizer = builtTokenizer;
+        console.log("Kuromoji loaded ✅");
+    });
+
+    function addFuriganaWithKuromoji(text) {
+        if (!tokenizer) return text;
+        return tokenizer.tokenize(text).map(tok => {
+            const s = tok.surface_form;
+            const r = tok.reading || "";
+            return (r && /[\u4e00-\u9faf]/.test(s)) ?
+                `<ruby>${s}<rp>(</rp><rt>${wanakana.toHiragana(r)}</rt><rp>)</rp></ruby>` : s;
+        }).join('');
+    }
+
+    function updateFontSize(size) {
+        output.style.fontSize = size + "px";
+        furiganaOutput.style.fontSize = size + "px";
+        fontSizeValue.textContent = size;
+    }
+
+    updateFontSize(fontSizeRange.value);
+
+    // ---- File Handling ----
+    function handleFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            imagePreview.src = e.target.result;
+            previewCard.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+    }
+
+    clearPreviewBtn.addEventListener('click', () => {
+        imagePreview.src = "";
+        previewCard.classList.add('d-none');
+        input.value = "";
+    });
+
+    // Drag & Drop
+    dropZone.addEventListener('click', () => input.click());
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    input.addEventListener('change', () => {
+        if (input.files && input.files[0]) handleFile(input.files[0]);
+    });
+
+    fontSizeRange.addEventListener('input', () => updateFontSize(fontSizeRange.value));
+
+    // ---- OCR Handling ----
+    runBtn.addEventListener('click', async () => {
+        if (!input.files[0]) {
+            alert("Please select an image first!");
+            return;
+        }
+
+        progressBarContainer.classList.remove("d-none");
+        resultsContainer.classList.add('d-none'); // hide until we have results
+
+        output.textContent = "";
+        furiganaOutput.innerHTML = "";
+        progressBar.style.width = "0%";
+        progressBar.setAttribute("aria-valuenow", 0);
+        progressBar.textContent = "0%";
+        progressBar.classList.remove("bg-success");
+
+        const lang = ocrTypeSelect.value;
+        const {data: {text}} = await Tesseract.recognize(input.files[0], lang, {
+            logger: info => {
+                if (info.status === "recognizing text") {
+                    const p = Math.round(info.progress * 100);
+                    progressBar.style.width = p + "%";
+                    progressBar.setAttribute("aria-valuenow", p);
+                    progressBar.textContent = p + "%";
+                } else progressBar.textContent = info.status;
+            }
+        });
+
+        progressBar.style.width = "100%";
+        progressBar.setAttribute("aria-valuenow", 100);
+        progressBar.textContent = "Done!";
+        progressBar.classList.add("bg-success");
+
+        output.textContent = text;
+        furiganaOutput.innerHTML = addFuriganaWithKuromoji(text);
+
+        document.querySelectorAll('.copy-btn').forEach(btn => btn.classList.remove('d-none'));
+
+        // Show results container only if there's text
+        resultsContainer.classList.remove('d-none');
+
+        // Highlight results
+        const resultTabsContent = document.querySelector('.tab-content');
+        resultTabsContent.classList.add('result-highlight');
+        setTimeout(() => resultTabsContent.classList.remove('result-highlight'), 1500);
+    });
+
+    // ---- Copy buttons ----
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = document.getElementById(btn.dataset.target);
+            navigator.clipboard.writeText(target.innerText || target.textContent).then(() => {
+                btn.textContent = "Copied!";
+                setTimeout(() => btn.textContent = "Copy", 1000);
+            });
+        });
+    });
+</script>
+</body>
+</html>
