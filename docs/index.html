@@ -41,23 +41,12 @@
             animation: highlightFade 1.5s ease-out;
         }
 
-        .main-header {
-            background-image: url('image/banner.jpg');
-            background-size: cover;
-            background-position: left;
-            height: 300px;
-        }
-
         .main-header > h1 {
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
         }
 
         .text-stroke {
             -webkit-text-stroke: 1px #000;
-        }
-
-        .main-footer {
-            background-color: #f9efe5;
         }
 
         @keyframes highlightFade {
@@ -69,6 +58,26 @@
             }
             100% {
                 box-shadow: none;
+            }
+        }
+
+        .text-shadow {
+            text-shadow: 2px 2px 16px rgba(0, 255, 136, 0.5);
+        }
+
+        .responsive-text {
+            font-size: 0.75em; /* smallest on mobile */
+        }
+
+        @media (min-width: 768px) {
+            .responsive-text {
+                font-size: 0.85em; /* medium size on md */
+            }
+        }
+
+        @media (min-width: 992px) {
+            .responsive-text {
+                font-size: 1em; /* larger on lg+ */
             }
         }
 
@@ -106,11 +115,20 @@
 
 <body class="bg-light">
 <div class="container">
-
-    <div style="min-height: 100vh;" class="d-flex flex-column">
-        <header class="main-header rounded-0 text-white d-flex justify-content-center align-content-center flex-column p-5">
-            <h1 class="text-center text-stroke fw-bold display-4">日本語 OCR + Furigana</h1>
-            <p class="text-center fw-bold fs-4 lead mb-0 text-stroke">Extract Japanese text with furigana support</p>
+    <div class="d-flex flex-column min-vh-100 shadow-lg">
+        <header class="rounded-0 text-white position-relative">
+            <img src="image/header.jpg" class="img-fluid" alt="Header image">
+            <div class="text-shadow responsive-text d-flex flex-column justify-content-center align-items-center position-absolute top-0 start-0 w-100 h-100 z-1">
+                <div class="display-4">
+                    <h1 class="responsive-text text-center text-stroke fw-bold">日本語 OCR <br
+                            class="d-none d-md-inline"/>+ Furigana</h1>
+                </div>
+                <div class="fs-3 d-none d-md-inline">
+                    <p class="responsive-text text-center fw-bold lead mb-0 text-stroke">
+                        Extract Japanese text with furigana support
+                    </p>
+                </div>
+            </div>
         </header>
         <div class="p-4 bg-white rounded-0 border-0 flex-grow-1 d-flex flex-column">
             <div class="d-flex flex-column gap-4 flex-grow-1">
@@ -200,22 +218,10 @@
         </div>
     </div>
 
-    <footer class="rounded-0 border-0 main-footer d-flex justify-content-center align-content-center">
-        <div class="d-md-flex justify-content-center align-items-center">
-            <div class="flex-grow-1 align-self-start">
-                <div class="card mt-4 m-md-4 border-4 border-dark rounded-4">
-                    <div class="card-body">
-                        <!-- @formatter:off -->
-                        <h2>
-                            <ruby>共有<rp>(</rp><rt>きょうゆう</rt><rp>)</rp></ruby>を<ruby>忘れ<rp>(</rp><rt>わすれ</rt><rp>)</rp></ruby>ないでくださーい。
-                        </h2>
-                        <!-- @formatter:on -->
-                    </div>
-                </div>
-            </div>
-            <div>
-                <img src="image/footer.jpg" alt="Footer image" class="img-fluid mt-4"/>
-            </div>
+    <footer class="rounded-0 border-0 d-flex flex-column justify-content-center align-content-center">
+        <img class="img-fluid" src="image/footer.jpg" alt="Footer image">
+        <div class="bg-dark text-white-50 d-flex justify-content-center align-items-center py-3">
+            <p class="mb-0">ありがとうございます。</p>
         </div>
     </footer>
 </div>
