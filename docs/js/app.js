@@ -20,6 +20,11 @@ class App {
         this.progressBarContainer = document.getElementById('progressBarContainer');
         this.resultsContainer = document.getElementById('resultsContainer');
 
+        this.furiganaInput = document.getElementById('furiganaInput');
+        this.runFuriganaOnlyBtn = document.getElementById('runFurigana');
+        this.furiganaOnlyResultContainer = document.getElementById('furiganaOnlyResultContainer');
+        this.furiganaOnlyOutput = document.getElementById('furiganaOnlyOutput');
+
         // Modules
         this.fileHandler = new FileHandler(
             this.input, this.imagePreview, this.previewCard, this.clearPreviewBtn, this.dropZone
@@ -36,6 +41,8 @@ class App {
     bindEvents() {
         this.runBtn.addEventListener('click', () => this.runOcr());
         this.fontSizeRange.addEventListener('input', () => this.updateFontSize(this.fontSizeRange.value));
+
+        this.runFuriganaOnlyBtn.addEventListener('click', () => this.runFuriganaOnly());
 
         document.querySelectorAll('.copy-btn').forEach(btn => {
             btn.addEventListener('click', () => this.copyToClipboard(btn.dataset.target, btn));
@@ -63,6 +70,12 @@ class App {
         }
     }
 
+    async runFuriganaOnly() {
+        this.furiganaOnlyResultContainer.classList.add('d-none');
+        this.furiganaOnlyOutput.innerHTML = this.furigana.addFurigana(this.furiganaInput.value);
+        this.showFuriganaOnlyResults();
+    }
+
     showResults() {
         document.querySelectorAll('.copy-btn').forEach(btn => btn.classList.remove('d-none'));
 
@@ -70,6 +83,15 @@ class App {
         this.resultsContainer.classList.add('fade');
         setTimeout(() => this.resultsContainer.classList.add('show'), 10);
         this.resultsContainer.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+
+    showFuriganaOnlyResults() {
+        document.querySelectorAll('.copy-btn').forEach(btn => btn.classList.remove('d-none'));
+
+        this.furiganaOnlyResultContainer.classList.remove('d-none');
+        this.furiganaOnlyResultContainer.classList.add('fade');
+        setTimeout(() => this.furiganaOnlyResultContainer.classList.add('show'), 10);
+        this.furiganaOnlyResultContainer.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
 
     updateFontSize(size) {

@@ -1,0 +1,104 @@
+ruby rt {
+    font-size: 0.6em;
+    color: #555;
+}
+
+.drop-zone {
+    border: 2px dashed #6c757d;
+    border-radius: 0.75rem;
+    padding: 2.5rem;
+    text-align: center;
+    color: #6c757d;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.drop-zone.dragover {
+    background-color: #e9ecef;
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.result-highlight {
+    animation: highlightFade 1.5s ease-out;
+}
+
+.main-header > h1 {
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.text-stroke {
+    -webkit-text-stroke: 1px #000;
+}
+
+@keyframes highlightFade {
+    0% {
+        box-shadow: 0 0 15px rgba(13, 110, 253, 0.8);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(13, 110, 253, 0.4);
+    }
+    100% {
+        box-shadow: none;
+    }
+}
+
+.text-shadow {
+    text-shadow: 2px 2px 16px rgba(0, 255, 136, 0.5);
+}
+
+.responsive-text {
+    font-size: 0.75em; /* smallest on mobile */
+}
+
+@media (min-width: 768px) {
+    .responsive-text {
+        font-size: 0.85em; /* medium size on md */
+    }
+}
+
+@media (min-width: 992px) {
+    .responsive-text {
+        font-size: 1em; /* larger on lg+ */
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+    .drop-zone {
+        padding: 2rem 1rem;
+        font-size: 1rem;
+    }
+
+    .drop-zone i {
+        font-size: 2rem;
+    }
+
+    .nav-tabs {
+        flex-wrap: wrap;
+    }
+
+    .nav-tabs .nav-item {
+        flex: 1 1 50%;
+        text-align: center;
+    }
+
+    #runOcr {
+        width: 100%;
+    }
+
+    pre, #furiganaOutput {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+}
+
+.tab-content > section,
+.tab-content > .active {
+    display: flex;
+    flex-direction: column;
+}

@@ -11,106 +11,8 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <style>
-        ruby rt {
-            font-size: 0.6em;
-            color: #555;
-        }
-
-        .drop-zone {
-            border: 2px dashed #6c757d;
-            border-radius: 0.75rem;
-            padding: 2.5rem;
-            text-align: center;
-            color: #6c757d;
-            cursor: pointer;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .drop-zone.dragover {
-            background-color: #e9ecef;
-            border-color: #0d6efd;
-            color: #0d6efd;
-        }
-
-        .result-highlight {
-            animation: highlightFade 1.5s ease-out;
-        }
-
-        .main-header > h1 {
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .text-stroke {
-            -webkit-text-stroke: 1px #000;
-        }
-
-        @keyframes highlightFade {
-            0% {
-                box-shadow: 0 0 15px rgba(13, 110, 253, 0.8);
-            }
-            50% {
-                box-shadow: 0 0 25px rgba(13, 110, 253, 0.4);
-            }
-            100% {
-                box-shadow: none;
-            }
-        }
-
-        .text-shadow {
-            text-shadow: 2px 2px 16px rgba(0, 255, 136, 0.5);
-        }
-
-        .responsive-text {
-            font-size: 0.75em; /* smallest on mobile */
-        }
-
-        @media (min-width: 768px) {
-            .responsive-text {
-                font-size: 0.85em; /* medium size on md */
-            }
-        }
-
-        @media (min-width: 992px) {
-            .responsive-text {
-                font-size: 1em; /* larger on lg+ */
-            }
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 576px) {
-            .drop-zone {
-                padding: 2rem 1rem;
-                font-size: 1rem;
-            }
-
-            .drop-zone i {
-                font-size: 2rem;
-            }
-
-            .nav-tabs {
-                flex-wrap: wrap;
-            }
-
-            .nav-tabs .nav-item {
-                flex: 1 1 50%;
-                text-align: center;
-            }
-
-            #runOcr {
-                width: 100%;
-            }
-
-            pre, #furiganaOutput {
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-            }
-        }
-    </style>
+    <!-- Custom Styles -->
+    <link href="style/jpreader.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
@@ -130,92 +32,153 @@
                 </div>
             </div>
         </header>
-        <div class="p-4 bg-white rounded-0 border-0 flex-grow-1 d-flex flex-column">
-            <div class="d-flex flex-column gap-4 flex-grow-1">
-                <!-- Upload -->
-                <div class="flex-grow-1 d-flex flex-column">
-                    <label for="imageInput" class="form-label fw-semibold">Upload an image</label>
-                    <div id="dropZone" class="drop-zone fs-5 flex-grow-1">
-                        <i class="bi bi-upload display-6 mb-2"></i>
-                        <span>Drop image here or click to select</span>
-                    </div>
-                    <input type="file" class="form-control d-none" id="imageInput" accept="image/*">
-                </div>
+        <main class="flex-grow-1 d-flex flex-column p-3">
+            <ul class="nav nav-tabs nav-justified" id="pagesTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-top-4 active" id="ocr-tab" data-bs-toggle="tab"
+                            data-bs-target="#extractTextSection" type="button" aria-selected="true" role="tab">
+                        Extract Text
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-top-4" id="furigana-tab" data-bs-toggle="tab"
+                            data-bs-target="#furiganaToTextSection" type="button" aria-selected="false" tabindex="-1"
+                            role="tab">
+                        Add Furigana
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content border rounded-4 border-top-0 rounded-top-0 flex-grow-1 d-flex flex-column">
+                <section
+                        class="tab-pane fade show active p-3 bg-white position-relative flex-grow-1 rounded-4 border-top-0 rounded-top-0"
+                        id="extractTextSection" role="tabpanel" aria-labelledby="text-tab">
+                    <div class="bg-white rounded-0 border-0 flex-grow-1 d-flex flex-column p-2">
+                        <div class="d-flex flex-column gap-4 flex-grow-1">
+                            <!-- Upload -->
+                            <div class="flex-grow-1 d-flex flex-column">
+                                <label for="imageInput" class="form-label fw-semibold">Upload an image</label>
+                                <div id="dropZone" class="drop-zone fs-5 flex-grow-1">
+                                    <i class="bi bi-upload display-6 mb-2"></i>
+                                    <span>Drop image here or click to select</span>
+                                </div>
+                                <input type="file" class="form-control d-none" id="imageInput" accept="image/*">
+                            </div>
 
-                <!-- Image Preview -->
-                <div id="previewCard" class="card d-none shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span class="fw-semibold">Preview</span>
-                        <button id="clearPreview" class="btn btn-sm btn-outline-danger">Clear</button>
-                    </div>
-                    <div class="card-body text-center">
-                        <img id="imagePreview" alt="Selected image" class="img-fluid rounded">
-                    </div>
-                </div>
+                            <!-- Image Preview -->
+                            <div id="previewCard" class="card d-none shadow-sm">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold">Preview</span>
+                                    <button id="clearPreview" class="btn btn-sm btn-outline-danger">Clear</button>
+                                </div>
+                                <div class="card-body text-center">
+                                    <img id="imagePreview" alt="Selected image" class="img-fluid rounded">
+                                </div>
+                            </div>
 
-                <!-- Controls -->
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <label for="ocrType" class="form-label">OCR Type</label>
-                        <select class="form-select" id="ocrType">
-                            <option value="jpn" selected>Horizontal Japanese</option>
-                            <option value="jpn_vert">Vertical Japanese</option>
-                            <option value="jpn+eng">Japanese + English</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="fontSizeRange" class="form-label">Font Size: <span
-                                id="fontSizeValue">16</span>px</label>
-                        <input type="range" class="form-range" id="fontSizeRange" min="12" max="36" step="1" value="16">
-                    </div>
-                </div>
+                            <!-- Controls -->
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label for="ocrType" class="form-label">OCR Type</label>
+                                    <select class="form-select" id="ocrType">
+                                        <option value="jpn" selected>Horizontal Japanese</option>
+                                        <option value="jpn_vert">Vertical Japanese</option>
+                                        <option value="jpn+eng">Japanese + English</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="fontSizeRange" class="form-label">Font Size: <span
+                                            id="fontSizeValue">16</span>px</label>
+                                    <input type="range" class="form-range" id="fontSizeRange" min="12" max="36" step="1"
+                                           value="16">
+                                </div>
+                            </div>
 
-                <!-- Run Button -->
-                <div class="d-grid">
-                    <button id="runOcr" class="btn btn-primary btn-lg">Run OCR</button>
-                </div>
+                            <!-- Run Button -->
+                            <div class="d-grid">
+                                <button id="runOcr" class="btn btn-primary btn-lg rounded-4">Run OCR</button>
+                            </div>
 
-                <!-- Progress -->
-                <div id="progressBarContainer" class="d-none">
-                    <div class="progress" style="height: 1.5rem;">
-                        <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
-                    </div>
-                </div>
+                            <!-- Progress -->
+                            <div id="progressBarContainer" class="d-none">
+                                <div class="progress" style="height: 1.5rem;">
+                                    <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%">0%
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Results Tabs -->
-                <div id="resultsContainer" class="d-none">
-                    <ul class="nav nav-tabs nav-justified" id="resultTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="text-tab" data-bs-toggle="tab"
-                                    data-bs-target="#textResult"
-                                    type="button">Recognized Text
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="furigana-tab" data-bs-toggle="tab"
-                                    data-bs-target="#furiganaResult"
-                                    type="button">With Furigana
-                            </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content border rounded p-3 border-top-0 rounded-top-0">
-                        <div class="tab-pane fade show active border rounded p-3 bg-white position-relative"
-                             id="textResult">
-                            <pre id="output" class="m-0" style="white-space: pre-wrap; font-size:16px;"></pre>
-                            <button class="btn btn-sm btn-outline-secondary mt-2 copy-btn d-none position-absolute z-1 top-0 end-0 mt-1 me-2"
-                                    data-target="output">Copy
-                            </button>
+                            <!-- Results Tabs -->
+                            <div id="resultsContainer" class="d-none">
+                                <ul class="nav nav-tabs nav-justified" id="resultTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="text-tab" data-bs-toggle="tab"
+                                                data-bs-target="#textResult"
+                                                type="button">Recognized Text
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="furigana-result-tab" data-bs-toggle="tab"
+                                                data-bs-target="#furiganaResult"
+                                                type="button">With Furigana
+                                        </button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content border rounded p-3 border-top-0 rounded-top-0">
+                                    <div class="tab-pane fade show active border rounded p-3 bg-white position-relative"
+                                         id="textResult">
+                                            <pre id="output" class="m-0"
+                                                 style="white-space: pre-wrap; font-size:16px;"></pre>
+                                        <button class="btn btn-sm btn-outline-secondary mt-2 copy-btn d-none position-absolute z-1 top-0 end-0 mt-1 me-2"
+                                                data-target="output">Copy
+                                        </button>
+                                    </div>
+                                    <div class="tab-pane fade border rounded p-3 bg-white position-relative"
+                                         id="furiganaResult">
+                                        <div id="furiganaOutput" style="font-size:16px;"></div>
+                                        <button class="btn btn-sm btn-outline-secondary mt-2 copy-btn d-none position-absolute z-1 top-0 end-0 mt-1 me-2"
+                                                data-target="furiganaOutput">Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="tab-pane fade border rounded p-3 bg-white position-relative" id="furiganaResult">
-                            <div id="furiganaOutput" style="font-size:16px;"></div>
-                            <button class="btn btn-sm btn-outline-secondary mt-2 copy-btn d-none position-absolute z-1 top-0 end-0 mt-1 me-2"
-                                    data-target="furiganaOutput">Copy
-                            </button>
+                    </div>
+                </section>
+                <section
+                        class="tab-pane fade p-3 bg-white position-relative flex-grow-1 rounded-4 border-top-0 rounded-top-0"
+                        id="furiganaToTextSection"
+                        role="tabpanel" aria-labelledby="furigana-tab">
+                    <div class="bg-white rounded-0 border-0 flex-grow-1 d-flex flex-column p-2">
+                        <div class="d-flex flex-column gap-4 flex-grow-1">
+
+                            <!-- Input Text -->
+                            <div class="flex-grow-1 d-flex flex-column">
+                                <label for="furiganaInput" class="form-label fw-semibold">Enter Japanese text</label>
+                                <textarea id="furiganaInput" class="form-control flex-grow-1" rows="6"
+                                          placeholder="日本語の文章を入力してください..."></textarea>
+                            </div>
+
+                            <!-- Run Button -->
+                            <div class="d-grid">
+                                <button id="runFurigana" class="btn btn-primary btn-lg rounded-4">
+                                    Add Furigana
+                                </button>
+                            </div>
+
+                            <!-- Results -->
+                            <div id="furiganaOnlyResultContainer" class="flex-grow-1 d-none d-flex flex-column">
+                                <div class="border rounded p-3 bg-white position-relative flex-grow-1"
+                                     id="furiganaTextResult">
+                                    <pre id="furiganaOnlyOutput" style="font-size:16px;" class="flex-grow-1"></pre>
+                                    <button class="btn btn-sm btn-outline-secondary mt-2 copy-btn d-none position-absolute z-1 top-0 end-0 mt-1 me-2"
+                                            data-target="furiganaOnlyOutput">Copy
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </section>
             </div>
-        </div>
+        </main>
     </div>
 
     <footer class="rounded-0 border-0 d-flex flex-column justify-content-center align-content-center">
